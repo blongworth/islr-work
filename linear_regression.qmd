@@ -1,0 +1,99 @@
+---
+title: "chapter 2: linear regression"
+---
+
+## Load libraries
+
+
+```{r}
+library(MASS)
+library(tidymodels)
+library(ISLR)
+```
+
+
+### Simple regression
+
+Predict medv using lstat
+
+```{r}
+lm_spec <- linear_reg() |> 
+    set_mode("regression") |> 
+    set_engine("lm")
+```
+
+```{r}
+lm_fit <- lm_spec |> 
+    fit(medv ~ lstat, data = Boston)
+
+lm_fit |> 
+    pluck("fit") |> 
+    summary()
+```
+
+```{r}
+tidy(lm_fit)
+```
+
+```{r}
+glance(lm_fit)
+```
+
+```{r}
+predict(lm_fit, new_data = Boston)
+```
+
+Compare prediction, conf int, and actual new_data
+
+```{r}
+bind_cols(
+    predict(lm_fit, new_data = Boston),
+    Boston
+) |> 
+    select(medv, .pred)
+```
+
+### Multiple regression
+
+predict medv using lstat and age
+
+```{r}
+lm_fit2 <- lm_spec |> 
+    fit(medv ~ lstat + age, data = Boston)
+```
+
+Did we do better?
+
+```{r}
+lm_fit2 |> 
+    pluck("fit") |> 
+    summary()
+```
+
+Not much
+
+### Interaction
+
+```{r}
+lm_fit3 <- lm_spec |> 
+    fit(medv ~ lstat * age, data = Boston)
+```
+
+```{r}
+lm_fit3 |> 
+    pluck("fit") |> 
+    summary()
+```
+
+Using recipes for Interaction
+
+```{r}
+rec_spec_interact <- recipe(medv ~ lstat + age, data = Boston) |> 
+    step_interact(~ lstat:age)
+
+lm_wf_interact <- workflow() |> 
+    add_model(lm_spec) |> 
+    add_recipe(rec_spec_interact)
+
+lm_wf_interact |> fit(Boston)
+```
