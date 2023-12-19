@@ -97,3 +97,40 @@ lm_wf_interact <- workflow() |>
 
 lm_wf_interact |> fit(Boston)
 ```
+
+Non-linear transformations
+
+```{r}
+rec_spec_pow2 <- recipe(medv ~ lstat, data = Boston) |> 
+    step_mutate(lstat2 = lstat ^ 2)
+
+lm_wf_pow2 <- workflow() |> 
+        add_model(lm_spec) |> 
+        add_recipe(rec_spec_pow2)
+
+lm_wf_pow2 |> fit(Boston)
+```
+
+```{r}
+
+rec_spec_log <- recipe(medv ~ lstat, data = Boston) |> 
+    step_log(lstat)
+
+lm_wf_log <- workflow() |> 
+        add_model(lm_spec) |> 
+        add_recipe(rec_spec_log)
+
+lm_wf_log |> fit(Boston)
+```
+
+qualitative predictors
+```{r}
+Carseats |> 
+    pull(ShelveLoc) |> 
+    contrasts()
+```
+
+```{r}
+lm_spec |> 
+    fit(Sales ~ . + Income:Advertising + Price:Age, data = Carseats)
+```
